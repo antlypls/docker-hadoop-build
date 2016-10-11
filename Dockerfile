@@ -2,7 +2,7 @@
 #
 # docker build -t antlypls/hadoop-nativelibs .
 
-FROM tianon/centos:6.5
+FROM centos:6.8
 MAINTAINER antlypls
 
 USER root
