@@ -1,9 +1,9 @@
 # Create an image to build Hadoop nativelibs
 #
-# docker build -t sequenceiq/hadoop-nativelibs .
+# docker build -t antlypls/hadoop-nativelibs .
 
 FROM tianon/centos:6.5
-MAINTAINER SequenceIQ
+MAINTAINER antlypls
 
 USER root
 
@@ -20,9 +20,10 @@ RUN ssh-keygen -q -N "" -t rsa -f /root/.ssh/id_rsa
 RUN cp /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 
 # java
-RUN curl -LO 'http://download.oracle.com/otn-pub/java/jdk/7u51-b13/jdk-7u51-linux-x64.rpm' -H 'Cookie: oraclelicense=accept-securebackup-cookie'
-RUN rpm -i jdk-7u51-linux-x64.rpm
-RUN rm jdk-7u51-linux-x64.rpm
+RUN curl -LO "http://download.oracle.com/otn-pub/java/jdk/8u102-b14/jdk-8u102-linux-x64.rpm" -H 'Cookie: oraclelicense=accept-securebackup-cookie'
+RUN rpm -i jdk-8u102-linux-x64.rpm
+RUN rm jdk-8u102-linux-x64.rpm
+
 ENV JAVA_HOME /usr/java/default
 ENV PATH $PATH:$JAVA_HOME/bin
 
@@ -37,21 +38,17 @@ ENV M2_HOME /usr/share/apache-maven-${M2_VER}
 ENV PATH $PATH:$M2_HOME/bin
 
 # hadoop
-RUN curl -s http://www.eu.apache.org/dist/hadoop/common/hadoop-2.7.0/hadoop-2.7.0-src.tar.gz | tar -xz -C /tmp/
+RUN curl -s http://www.eu.apache.org/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3-src.tar.gz | tar -xz -C /tmp/
 
 # protoc -ohhh
-RUN curl https://protobuf.googlecode.com/files/protobuf-2.5.0.tar.bz2 | bunzip2|tar -x -C /tmp
+RUN curl -L https://github.com/google/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.bz2 | bunzip2|tar -x -C /tmp
 RUN cd /tmp/protobuf-2.5.0 && ./configure
 RUN cd /tmp/protobuf-2.5.0 && make && make install
 ENV LD_LIBRARY_PATH /usr/local/lib
 ENV export LD_RUN_PATH /usr/local/lib
 
 # build native libs
-RUN cd /tmp/hadoop-2.7.0-src && mvn package -Pdist,native -DskipTests -Dtar
+RUN cd /tmp/hadoop-2.7.3-src && mvn package -Pdist,native -DskipTests -Dtar
 
 # tar to stdout
-CMD tar -cv -C /tmp/hadoop-2.7.0-src/hadoop-dist/target/hadoop-2.7.0/lib/native/ .
-
-# docker run --rm  sequenceiq/hadoop-nativelibs > x.tar
-# get bintray helper
-#RUN curl -Lo /tmp/bintray-functions j.mp/bintray-functions && . /tmp/bintray-functions
+CMD tar -cv -C /tmp/hadoop-2.7.3-src/hadoop-dist/target/hadoop-2.7.3/lib/native/ .
